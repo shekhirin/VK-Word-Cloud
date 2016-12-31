@@ -90,7 +90,7 @@ def make_cloud(user_id):
         user = vk.users.get(user_ids=user_id)[0]
         user_id = user['id']
         name = user['first_name'] + ' ' + user['last_name']
-        data = vk.photos.getUploadServer(album_id=239993461, group_id=136503501)
+        data = vk.photos.getUploadServer(album_id=config.album_id, group_id=config.group_id)
         DATA_UPLOAD_URL = data['upload_url']
         if os.path.isfile('{}.jpg'.format(user_id)):
             clouded = open('{}.jpg'.format(user_id), 'rb')
