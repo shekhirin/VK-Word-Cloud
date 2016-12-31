@@ -73,8 +73,16 @@ def cloud(user_id):
 def make_cloud(user_id):
     processing.append(user_id)
     try:
+        if not vk.groups.isMember(group_id=config.group_id, user_id=user_id):
+            vk_group.messages.send(user_id=user_id, message='Чтобы составить облако тегов за 2016 год, подпишись на меня https://vk.com/wordcloud2017 😢')
+            time.sleep(1)
+            vk_group.messages.send(user_id=user_id, message='Когда будешь готов, снова отправь кодовое слово "облако" 😊')
+            processing.remove(user_id)
+            time.sleep(5)
+            return
         if len(vk.wall.get(owner_id=user_id, count=1)['items']) == 0:
             vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов☹️')
+            processing.remove(user_id)
             time.sleep(5)
             return
         else:
@@ -84,6 +92,7 @@ def make_cloud(user_id):
                     for copy in latest['copy_history']:
                         if 'text' not in copy:
                             vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов☹️')
+                            processing.remove(user_id)
                             time.sleep(5)
                             return
         vk_group.messages.send(user_id=user_id, message='Посмотрим, чем ты увлекался в 2016 году...⌛️')
@@ -105,7 +114,7 @@ def make_cloud(user_id):
             photo = vk.photos.save(server=r['server'], photos_list=r['photos_list'], group_id=r['gid'], album_id=r['aid'], hash=r['hash'])[0]
             collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id']})
         # post = vk.wall.post(owner_id=-136503501, from_group=1, message='Облако тегов за 2016 год для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))
-        vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов на 2016 год!', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
+        vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов на 2016 год! 🌍', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
     except Exception as e:
         processing.remove(user_id)
@@ -116,7 +125,7 @@ def make_cloud(user_id):
 def process_updates(updates):
     for update in updates:
         if update[0] == 4 and update[3] not in processing and update[6].lower() == 'облако':
-            make_cloud(update[3])
+            Thread(target=make_cloud, args=(update[3], )).start()
 
 longpoll = vk_group.messages.getLongPollServer()
 while True:
@@ -130,4 +139,5 @@ while True:
         Thread(target=process_updates, args=(response['updates'], )).start()
     except Exception as e:
         longpoll = vk_group.messages.getLongPollServer()
+        print(e)
         continue
