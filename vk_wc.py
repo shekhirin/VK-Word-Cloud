@@ -41,7 +41,7 @@ def cloud(user_id):
         else:
             wall.extend(part)
             offset += 100
-    tokenizer = RegexpTokenizer('[a-zA-Zа-яА-ЯёЁ]+')
+    tokenizer = RegexpTokenizer('[а-яА-ЯёЁ]+')
     morph = pymorphy2.MorphAnalyzer()
     def transform(sentence):
         return map(lambda x: morph.parse(x)[0].normal_form, filter(lambda x: len(x) > 2 and 'NOUN' in morph.parse(x)[0].tag, tokenizer.tokenize(sentence.replace('\xa0', ' '))))
