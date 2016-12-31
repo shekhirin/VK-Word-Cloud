@@ -63,8 +63,8 @@ def cloud(user_id):
         background_color='white',
         margin=5,
         stopwords=sw,
-        width=1000,
-        height=1000
+        width=500,
+        height=500
     ).generate(' '.join(top_words))
     wordcloud = wordcloud.recolor(color_func=color_func, random_state=3)
     wordcloud.to_file('{}.jpg'.format(user_id))
@@ -74,7 +74,7 @@ def make_cloud(user_id):
     processing.append(user_id)
     try:
         if not vk.groups.isMember(group_id=config.group_id, user_id=user_id):
-            vk_group.messages.send(user_id=user_id, message='Чтобы составить облако тегов за 2016 год, подпишись на меня https://vk.com/wordcloud2017 😢')
+            vk_group.messages.send(user_id=user_id, message='Чтобы составить облако тегов за 2016 год, подпишись на меня https://vk.com/wordcloud2017 🙄')
             time.sleep(1)
             vk_group.messages.send(user_id=user_id, message='Когда будешь готов, снова отправь кодовое слово "облако" 😊')
             processing.remove(user_id)
@@ -101,17 +101,14 @@ def make_cloud(user_id):
         name = user['first_name'] + ' ' + user['last_name']
         data = vk.photos.getUploadServer(album_id=config.album_id, group_id=config.group_id)
         DATA_UPLOAD_URL = data['upload_url']
-        if os.path.isfile('{}.jpg'.format(user_id)):
-            clouded = open('{}.jpg'.format(user_id), 'rb')
-            photo = collection.find_one({'user_id': user_id})
-        else:
-            clouded = cloud(user_id)
-            if not clouded:
-                vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов☹️')
-                time.sleep(5)
-                return
-            r = requests.post(DATA_UPLOAD_URL, files={'photo': clouded}).json()
-            photo = vk.photos.save(server=r['server'], photos_list=r['photos_list'], group_id=r['gid'], album_id=r['aid'], hash=r['hash'])[0]
+        clouded = cloud(user_id)
+        if not clouded:
+            vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов☹️')
+            time.sleep(5)
+            return
+        r = requests.post(DATA_UPLOAD_URL, files={'photo': clouded}).json()
+        photo = vk.photos.save(server=r['server'], photos_list=r['photos_list'], group_id=r['gid'], album_id=r['aid'], hash=r['hash'])[0]
+        if not collection.find_one({'user_id': user_id}):
             collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id']})
         # post = vk.wall.post(owner_id=-136503501, from_group=1, message='Облако тегов за 2016 год для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов на 2016 год! 🌍', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
