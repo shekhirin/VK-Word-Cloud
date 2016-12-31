@@ -53,7 +53,7 @@ def cloud(user_id):
             for copy in post['copy_history']:
                 if 'text' in copy:
                     top_words.extend(transform(copy['text']))
-    if not top_words:
+    if not top_words or len(top_words) < 20:
         return
     def color_func(word, font_size, position, orientation, random_state=None, **kwargs):
         return "hsl(%d, 100%%, %d%%)" % (random.randint(0, 360), random.randint(20, 50))
