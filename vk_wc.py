@@ -26,6 +26,7 @@ vk_session = vk_api.VkApi(token=config.vk_user_token)
 tools = vk_api.VkTools(vk_session)
 vk = vk_session.get_api()
 collection = MongoClient()['wordcloud']['photos']
+remove_words = ['год']
 
 processing = []
 
@@ -53,13 +54,15 @@ def cloud(user_id):
             for copy in post['copy_history']:
                 if 'text' in copy:
                     top_words.extend(transform(copy['text']))
+    top_words = list(filter(lambda x: x.lower() not in remove_words, top_words))
     if not top_words or len(set(top_words)) < 10:
         return
     def color_func(word, font_size, position, orientation, random_state=None, **kwargs):
         return "hsl(%d, 100%%, %d%%)" % (random.randint(0, 360), random.randint(20, 50))
     sw = (stopwords.words('russian') + stopwords.words('english'))
     wordcloud = WordCloud(
-        max_words=100,
+        max_words=200,
+        max_font_size=300,
         background_color='white',
         margin=5,
         stopwords=sw,
