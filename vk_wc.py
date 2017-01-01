@@ -86,6 +86,7 @@ def cloud(user_id):
     return open('clouds/{}.jpg'.format(user_id), 'rb'), top_words
 
 def send_cloud(user_id):
+    print('started send_cloud for', user_id)
     processing.append(user_id)
     try:
         if not vk.groups.isMember(group_id=config.group_id, user_id=user_id):
@@ -132,6 +133,7 @@ def send_cloud(user_id):
         print(e)
         pass
     processing.remove(user_id)
+    print('finished send_cloud for', user_id)
 
 def send_friend_cloud(user_id, friend_id=None):
     if not friend_id:
