@@ -33,10 +33,8 @@ processing = []
 def cloud(user_id):
     wall = []
     offset = 0
-    year = int(time.mktime(datetime(2016, 1, 1).timetuple()))
     while True:
         part = vk.wall.get(owner_id=user_id, count=100, offset=offset)['items']
-        part = list(filter(lambda x: x['date'] > year, part))
         if len(part) == 0:
             break
         else:
@@ -70,14 +68,14 @@ def cloud(user_id):
         height=500
     ).generate(' '.join(top_words))
     wordcloud = wordcloud.recolor(color_func=color_func, random_state=3)
-    wordcloud.to_file('{}.jpg'.format(user_id))
-    return open('{}.jpg'.format(user_id), 'rb')
+    wordcloud.to_file('clouds/{}.jpg'.format(user_id))
+    return open('clouds/{}.jpg'.format(user_id), 'rb')
 
 def make_cloud(user_id):
     processing.append(user_id)
     try:
         if not vk.groups.isMember(group_id=config.group_id, user_id=user_id):
-            vk_group.messages.send(user_id=user_id, message='Чтобы составить облако тегов за 2016 год, подпишись на меня https://vk.com/wordcloud2017 🙄')
+            vk_group.messages.send(user_id=user_id, message='Чтобы составить облако тегов, подпишись на меня https://vk.com/wordcloud2017 🙄')
             time.sleep(1)
             vk_group.messages.send(user_id=user_id, message='Когда будешь готов, снова отправь кодовое слово "облако" 😊')
             processing.remove(user_id)
@@ -90,7 +88,7 @@ def make_cloud(user_id):
             return
         else:
             latest = vk.wall.get(owner_id=user_id, count=1)['items'][0]
-            if latest['date'] < int(time.mktime(datetime(2016, 1, 1).timetuple())) or not latest['text']:
+            if not latest['text']:
                 if 'copy_history' in latest:
                     for copy in latest['copy_history']:
                         if 'text' not in copy:
@@ -98,7 +96,7 @@ def make_cloud(user_id):
                             processing.remove(user_id)
                             time.sleep(5)
                             return
-        vk_group.messages.send(user_id=user_id, message='Посмотрим, чем ты увлекался в 2016 году...⌛️')
+        vk_group.messages.send(user_id=user_id, message='Посмотрим, что тебя интересует больше всего 😋')
         user = vk.users.get(user_ids=user_id)[0]
         user_id = user['id']
         name = user['first_name'] + ' ' + user['last_name']
@@ -114,7 +112,7 @@ def make_cloud(user_id):
         if not collection.find_one({'user_id': user_id}):
             collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id']})
         # post = vk.wall.post(owner_id=-136503501, from_group=1, message='Облако тегов за 2016 год для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))
-        vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов на 2016 год! 🌍', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
+        vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
     except Exception as e:
         processing.remove(user_id)
