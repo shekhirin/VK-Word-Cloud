@@ -67,7 +67,7 @@ def cloud(user_id):
                 if 'text' in copy:
                     top_words.extend(transform(copy['text']))
     top_words = list(filter(lambda x: x.lower() not in remove_words, top_words))
-    if not top_words or len(set(top_words)) < 10:
+    if not top_words:
         return
     def color_func(word, font_size, position, orientation, random_state=None, **kwargs):
         return "hsl(%d, 100%%, %d%%)" % (random.randint(0, 360), random.randint(20, 50))
@@ -83,7 +83,7 @@ def cloud(user_id):
     ).generate(' '.join(top_words))
     wordcloud = wordcloud.recolor(color_func=color_func, random_state=3)
     wordcloud.to_file('clouds/{}.jpg'.format(user_id))
-    return open('clouds/{}.jpg'.format(user_id), 'rb'), top_words
+    return open('clouds/{}.jpg'.format(user_id), 'rb')
 
 def send_cloud(user_id):
     print('started send_cloud for', user_id)
@@ -117,7 +117,7 @@ def send_cloud(user_id):
         name = user['first_name'] + ' ' + user['last_name']
         data = vk.photos.getUploadServer(album_id=config.album_id, group_id=config.group_id)
         DATA_UPLOAD_URL = data['upload_url']
-        clouded, words = cloud(user_id)
+        clouded = cloud(user_id)
         if not clouded:
             vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов☹️')
             time.sleep(5)
@@ -128,12 +128,11 @@ def send_cloud(user_id):
         # post = vk.wall.post(owner_id=-136503501, from_group=1, message='Облако тегов за 2016 год для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
+        processing.remove(user_id)
+        print('finished send_cloud for', user_id)
     except Exception as e:
         processing.remove(user_id)
-        print(e)
-        pass
-    processing.remove(user_id)
-    print('finished send_cloud for', user_id)
+        raise e
 
 def send_friend_cloud(user_id, friend_id=None):
     if not friend_id:
