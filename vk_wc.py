@@ -57,7 +57,7 @@ def cloud(user_id):
     tokenizer = RegexpTokenizer('[а-яА-ЯёЁ]+')
     morph = pymorphy2.MorphAnalyzer()
     def transform(sentence):
-        return map(lambda x: morph.parse(x)[0].normal_form, filter(lambda x: len(x) > 2 and 'NOUN' in morph.parse(x)[0].tag, tokenizer.tokenize(sentence.replace('\xa0', ' '))))
+        return map(lambda x: morph.parse(x)[0].normal_form.replace('ё', 'е'), filter(lambda x: len(x) > 2 and 'NOUN' in morph.parse(x)[0].tag, tokenizer.tokenize(sentence.replace('\xa0', ' '))))
     top_words = []
     for post in wall:
         if 'text' in post:
@@ -73,6 +73,8 @@ def cloud(user_id):
         return "hsl(%d, 100%%, %d%%)" % (random.randint(0, 360), random.randint(20, 50))
     sw = (stopwords.words('russian') + stopwords.words('english') + remove_words)
     wordcloud = WordCloud(
+        max_words=200,
+        max_font_size=500,
         background_color='white',
         margin=5,
         width=1000,
@@ -139,9 +141,9 @@ def send_friend_cloud(user_id, friend_id=None):
 def process_updates(updates):
     for update in updates:
         if update[0] == 4 and update[3] not in processing:
-            if update[6].lower() in 'облако':
+            if update[6].lower() == 'облако':
                 Thread(target=send_cloud, args=(update[3], )).start()
-            elif update[6].lower() in 'облако для друга':
+            elif update[6].lower() == 'облако для друга':
                 Thread(target=send_friend_cloud, args=(update[3], )).start()
 
 if __name__ == '__main__':
