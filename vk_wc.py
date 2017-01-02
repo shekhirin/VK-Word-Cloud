@@ -45,15 +45,7 @@ def tfidf(word, blob, bloblist):
     return tf(word, blob) * idf(word, bloblist)
 
 def cloud(user_id):
-    wall = []
-    offset = 0
-    while True:
-        part = vk.wall.get(owner_id=user_id, count=100, offset=offset)['items']
-        if len(part) == 0:
-            break
-        else:
-            wall.extend(part)
-            offset += 100
+    wall = tools.get_all('wall.get', 100, {'owner_id': user_id})['items']
     tokenizer = RegexpTokenizer('[а-яА-ЯёЁ]+')
     morph = pymorphy2.MorphAnalyzer()
     def transform(sentence):
@@ -83,7 +75,7 @@ def cloud(user_id):
     ).generate(' '.join(top_words))
     wordcloud = wordcloud.recolor(color_func=color_func, random_state=3)
     wordcloud.to_file('clouds/{}.jpg'.format(user_id))
-    return open('clouds/{}.jpg'.format(user_id), 'rb')
+    return open('clouds/{}.jpg'.format(user_id), 'rb'), wall
 
 def send_cloud(user_id):
     print('started send_cloud for', user_id)
@@ -117,14 +109,14 @@ def send_cloud(user_id):
         name = user['first_name'] + ' ' + user['last_name']
         data = vk.photos.getUploadServer(album_id=config.album_id, group_id=config.group_id)
         DATA_UPLOAD_URL = data['upload_url']
-        clouded = cloud(user_id)
+        clouded, wall = cloud(user_id)
         if not clouded:
             vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов☹️')
             time.sleep(5)
             return
         r = requests.post(DATA_UPLOAD_URL, files={'photo': clouded}).json()
         photo = vk.photos.save(server=r['server'], photos_list=r['photos_list'], group_id=r['gid'], album_id=r['aid'], hash=r['hash'])[0]
-        collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id']})
+        collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall})
         # post = vk.wall.post(owner_id=-136503501, from_group=1, message='Облако тегов за 2016 год для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
