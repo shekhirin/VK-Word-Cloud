@@ -159,6 +159,11 @@ if __name__ == '__main__':
             longpoll['ts'] = response['ts'] if 'ts' in response else longpoll['ts']
             Thread(target=process_updates, args=(response['updates'], )).start()
         except Exception as e:
-            longpoll = vk_group.messages.getLongPollServer()
+            while True:
+                try:
+                    longpoll = vk_group.messages.getLongPollServer()
+                    break
+                except Exception:
+                    continue
             print(e)
             continue
