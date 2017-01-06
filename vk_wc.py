@@ -110,7 +110,7 @@ def send_cloud(user_id):
         if not collection.find_one({'user_id': user_id, 'post': {'$exists': True}}):
             try:
                 post_id = vk.wall.post(owner_id=-136503501, from_group=1, message='Облако тегов для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
-                vk_group.messages.send(user_id=user_id, attachment='wall{}_{}'.format(config.group_id, post_id))
+                vk_group.messages.send(user_id=user_id, attachment='wall{}_{}'.format(photo['owner_id'], post_id))
             except Exception:
                 post_id = None
                 vk_group.messages.send(user_id=user_id, message='Похоже, я превысил лимит количества постов на сегодня 😭')
