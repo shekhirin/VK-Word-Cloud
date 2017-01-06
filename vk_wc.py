@@ -109,11 +109,12 @@ def send_cloud(user_id):
         name = user['first_name'] + ' ' + user['last_name']
         data = vk.photos.getUploadServer(album_id=config.album_id, group_id=config.group_id)
         DATA_UPLOAD_URL = data['upload_url']
-        clouded, wall = cloud(user_id)
+        clouded = cloud(user_id)
         if not clouded:
             vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов ☹️')
             time.sleep(5)
             return
+        clouded, wall = clouded
         r = requests.post(DATA_UPLOAD_URL, files={'photo': clouded}).json()
         photo = vk.photos.save(server=r['server'], photos_list=r['photos_list'], group_id=r['gid'], album_id=r['aid'], hash=r['hash'])[0]
         vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
