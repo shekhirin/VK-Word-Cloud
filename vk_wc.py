@@ -111,19 +111,29 @@ def send_cloud(user_id):
         DATA_UPLOAD_URL = data['upload_url']
         clouded, wall = cloud(user_id)
         if not clouded:
-            vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов☹️')
+            vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов ☹️')
             time.sleep(5)
             return
         r = requests.post(DATA_UPLOAD_URL, files={'photo': clouded}).json()
         photo = vk.photos.save(server=r['server'], photos_list=r['photos_list'], group_id=r['gid'], album_id=r['aid'], hash=r['hash'])[0]
-        collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall})
-        # post = vk.wall.post(owner_id=-136503501, from_group=1, message='Облако тегов за 2016 год для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
+        if not collection.find_one({'user_id': user_id, 'post': {'$exists': True}}):
+            try:
+                post_id = vk.wall.post(owner_id=-136503501, from_group=1, message='Облако тегов для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
+            except Exception:
+                post_id = None
+                vk_group.messages.send(user_id=user_id, message='Похоже, я превысил лимит количества постов на сегодня 😭')
+                vk_group.messages.send(user_id=user_id, message='Приходи завтра и я выложу твое облако на стену группы 😎')
+        else:
+            post_id = collection.find_one({'user_id': user_id, 'post': {'$exists': True}})['post']
+        if post_id:
+            collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall, 'post': post_id})
         processing.remove(user_id)
         print('finished send_cloud for', user_id)
     except Exception as e:
         processing.remove(user_id)
+        print('finished send_cloud for', user_id)
         raise e
 
 def send_friend_cloud(user_id, friend_id=None):
