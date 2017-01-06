@@ -66,8 +66,8 @@ def cloud(user_id):
     return open('clouds/{}.jpg'.format(user_id), 'rb'), wall
 
 def send_cloud(user_id):
-    print('started send_cloud for', user_id)
     processing.append(user_id)
+    print('started send_cloud for', user_id)
     try:
         if not vk.groups.isMember(group_id=config.group_id, user_id=user_id):
             vk_group.messages.send(user_id=user_id, message='Чтобы составить облако тегов, подпишись на меня https://vk.com/wordcloud2017 🙄')
