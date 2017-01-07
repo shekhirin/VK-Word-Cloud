@@ -32,7 +32,12 @@ def cloud(user_id):
     tokenizer = RegexpTokenizer('[а-яА-ЯёЁ]+')
     morph = pymorphy2.MorphAnalyzer()
     def transform(sentence):
-        return map(lambda x: morph.parse(x)[0].normal_form.replace('ё', 'е'), filter(lambda x: len(x) > 2 and 'NOUN' in morph.parse(x)[0].tag, tokenizer.tokenize(sentence.replace('\xa0', ' '))))
+        return map(lambda x: morph.parse(x)[0].normal_form.replace('ё', 'е'),
+            filter(
+                lambda x: len(x) > 2 and 'NOUN' in morph.parse(x)[0].tag,
+                tokenizer.tokenize(sentence.replace('\xa0', ' '))
+            )
+        )
     top_words = []
     for post in wall:
         if 'text' in post:
@@ -122,18 +127,11 @@ def send_cloud(user_id):
         print('Finished cloud for', user_id)
         raise e
 
-def send_friend_cloud(user_id, friend_id=None):
-    if not friend_id:
-
-        time.sleep(5)
-
 def process_updates(updates):
     for update in updates:
         if update[0] == 4 and update[3] not in processing:
             if update[6].lower() == 'облако':
                 Thread(target=send_cloud, args=(update[3], )).start()
-            elif update[6].lower() == 'облако для друга':
-                Thread(target=send_friend_cloud, args=(update[3], )).start()
 
 if __name__ == '__main__':
     longpoll = vk_group.messages.getLongPollServer()
