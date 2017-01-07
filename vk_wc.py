@@ -12,16 +12,11 @@ import time
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 import nltk
-from collections import Counter
 from wordcloud import WordCloud
 import random
 import pymorphy2
-from multiprocessing.pool import Pool
-from tqdm import tqdm
 from pymongo import MongoClient
 import config
-import math
-from textblob import TextBlob as tb
 
 vk_group = vk_api.VkApi(token=config.vk_community_token).get_api()
 vk_session = vk_api.VkApi(token=config.vk_user_token)
@@ -108,14 +103,15 @@ def send_cloud(user_id):
         photo = vk.photos.save(server=r['server'], photos_list=r['photos_list'], group_id=r['gid'], album_id=r['aid'], hash=r['hash'])[0]
         vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
-        try:
-            post_id = vk.wall.post(owner_id=-136503501, from_group=1, message='Облако тегов для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
-        except Exception:
-            post_id = None
-            vk_group.messages.send(user_id=user_id, message='Похоже, я превысил лимит количества постов на сегодня 😭')
-            vk_group.messages.send(user_id=user_id, message='Создай новое облако завтра, и я выложу его на стену группы 😎')
+        post_id = None
+        if collection.find_one({'user_id': user_id, 'timestamp': {'$lt': time.time()-86400}}):
+            try:
+                post_id = vk.wall.post(owner_id=-config.group_id, from_group=1, message='Облако тегов для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
+            except Exception:
+                vk_group.messages.send(user_id=user_id, message='Похоже, я превысил лимит количества постов на сегодня 😭')
+                vk_group.messages.send(user_id=user_id, message='Создай новое облако завтра, и я выложу его на стену группы 😎')
         if post_id:
-            collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall, 'post': post_id})
+            collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall, 'post': post_id, 'timestamp': time.time()})
             vk_group.messages.send(user_id=user_id, attachment='wall{}_{}'.format(photo['owner_id'], post_id))
         else:
             collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall})
