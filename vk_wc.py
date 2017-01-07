@@ -109,7 +109,7 @@ def send_cloud(user_id):
         vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
         post_id = None
-        if collection.find_one({'user_id': user_id, 'timestamp': {'$lt': time.time()-86400}}):
+        if not collection.find_one({'user_id': user_id, 'timestamp': {'$gt': time.time()-86400}}):
             try:
                 post_id = vk.wall.post(owner_id=-config.group_id, from_group=1, message='Облако тегов для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
             except Exception:
