@@ -59,7 +59,8 @@ def cloud(user_id):
         margin=5,
         width=1000,
         height=1000,
-        stopwords=sw
+        stopwords=sw,
+        prefer_horizontal=0.95
     ).generate(' '.join(top_words))
     wordcloud = wordcloud.recolor(color_func=color_func, random_state=3)
     wordcloud.to_file('clouds/{}.jpg'.format(user_id))
@@ -67,7 +68,7 @@ def cloud(user_id):
 
 def send_cloud(user_id):
     processing.append(user_id)
-    print('Generating clod for', user_id)
+    print('Generating cloud for', user_id)
     try:
         if not vk.groups.isMember(group_id=config.group_id, user_id=user_id):
             vk_group.messages.send(user_id=user_id, message='Чтобы составить облако тегов, подпишись на меня https://vk.com/wordcloud2017 🙄')
@@ -119,10 +120,10 @@ def send_cloud(user_id):
         else:
             collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall})
         processing.remove(user_id)
-        print('Finished for', user_id)
+        print('Finished cloud for', user_id)
     except Exception as e:
         processing.remove(user_id)
-        print('Finished for', user_id)
+        print('Finished cloud for', user_id)
         raise e
 
 def send_friend_cloud(user_id, friend_id=None):
