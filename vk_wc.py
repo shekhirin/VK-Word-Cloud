@@ -69,7 +69,7 @@ def cloud(user_id):
     wordcloud = WordCloud(
         max_words=200,
         max_font_size=500,
-        background_color='white',
+        background_color='black',
         margin=5,
         width=1000,
         height=1000,
