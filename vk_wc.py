@@ -14,6 +14,7 @@ import random
 import pymorphy2
 from pymongo import MongoClient
 import config
+import io
 
 print('Connecting to VK...', end=' ')
 vk_group = vk_api.VkApi(token=config.vk_community_token).get_api()
@@ -73,9 +74,10 @@ def cloud(user_id):
         stopwords=sw,
         prefer_horizontal=0.95
     ).generate(' '.join(top_words))
-    wordcloud = wordcloud.recolor(color_func=color_func, random_state=3)
-    wordcloud.to_file(os.path.join(DIR, 'clouds/{}.jpg'.format(user_id)))
-    return open(os.path.join(DIR, 'clouds/{}.jpg'.format(user_id)), 'rb'), wall
+    wordcloud = wordcloud.recolor(color_func=color_func, random_state=3).to_image()
+    img_arr = io.BytesIO()
+    wordcloud.save(img_arr, format='PNG')
+    return img_arr.getvalue(), wall
 
 
 def send_cloud(user_id, message):
@@ -107,7 +109,7 @@ def send_cloud(user_id, message):
             processing.remove(user_id)
             time.sleep(5)
             return
-        vk_group.messages.send(user_id=user_id, message='Посмотрим, что тебя интересвало в 2018 году больше всего 😋')
+        vk_group.messages.send(user_id=user_id, message='Посмотрим, что тебя интересовало в 2018 году больше всего 😋')
         user = vk.users.get(user_ids=user_id)[0]
         user_id = user['id']
         name = user['first_name'] + ' ' + user['last_name']
