@@ -150,11 +150,11 @@ def send_cloud(user_id, message):
                                        message='Создай новое облако завтра, и я выложу его на стену группы 😎')
         if post_id:
             collection.insert(
-                {'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall, 'post': post_id,
+                {'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'post': post_id,
                  'timestamp': time.time()})
             vk_group.messages.send(user_id=user_id, attachment='wall{}_{}'.format(photo['owner_id'], post_id))
         else:
-            collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall})
+            collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id']})
         processing.remove(user_id)
         print('Finished cloud for', user_id)
         return
@@ -173,7 +173,7 @@ if __name__ == '__main__':
             print(event.user_id, event.text)
             Thread(target=send_cloud, args=(event.user_id, event.text)).start()
 
-#
+# #
 # if __name__ == '__main__':
 #     dialogs = vk_group.messages.getDialogs(count=200, unanswered=1)['items']
 #
