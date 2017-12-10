@@ -11,11 +11,17 @@ import pymorphy2
 from pymongo import MongoClient
 import config
 
+print('Connecting to VK...', end=' ')
 vk_group = vk_api.VkApi(token=config.vk_community_token).get_api()
 vk_session = vk_api.VkApi(token=config.vk_user_token)
 tools = vk_api.VkTools(vk_session)
 vk = vk_session.get_api()
+print('Done')
+
+print('Connecting to MongoDB...', end=' ')
 collection = MongoClient(config.mongo_host)[config.mongo_db]['photos']
+print('Done')
+
 remove_words = ['год']
 
 processing = []
