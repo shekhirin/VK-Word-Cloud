@@ -87,8 +87,6 @@ def cloud(user_id):
 def send_cloud(user_id, message):
     processing.append(user_id)
 
-    print(processing)
-
     if message.lower() != 'облако':
         vk_group.messages.send(user_id=user_id, message='Если ты хочешь получить свое облако тегов за 2017 '
                                                         'год, отправь мне слово "облако" без кавычек 🙃')
