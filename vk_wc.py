@@ -149,6 +149,7 @@ def process_updates(updates):
 
 
 if __name__ == '__main__':
+    print('Initializing longpoll connection...')
     longpoll = vk_group.messages.getLongPollServer()
     while True:
         try:
