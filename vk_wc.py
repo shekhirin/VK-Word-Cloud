@@ -3,6 +3,7 @@ import os
 import requests
 from threading import Thread
 import vk_api
+from vk_api.longpoll import VkLongPoll, VkEventType
 from datetime import datetime
 import time
 from nltk.tokenize import RegexpTokenizer
@@ -18,7 +19,8 @@ import config
 import io
 
 print('Connecting to VK...', end=' ')
-vk_group = vk_api.VkApi(token=config.vk_community_token).get_api()
+vk_group_session = vk_api.VkApi(token=config.vk_community_token)
+vk_group = vk_group_session.get_api()
 vk_session = vk_api.VkApi(token=config.vk_user_token)
 tools = vk_api.VkTools(vk_session)
 vk = vk_session.get_api()
@@ -88,6 +90,7 @@ def send_cloud(user_id, message):
     if message.lower() != 'облако':
         vk_group.messages.send(user_id=user_id, message='Если ты хочешь получить свое облако тегов за 2017 '
                                                         'год, отправь мне слово "облако" без кавычек 🙃')
+        time.sleep(5)
         return
 
     processing.append(user_id)
@@ -154,37 +157,18 @@ def send_cloud(user_id, message):
             collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall})
         processing.remove(user_id)
         print('Finished cloud for', user_id)
+        return
     except Exception as e:
         processing.remove(user_id)
         print('Finished cloud for', user_id, 'with error')
         raise e
 
 
-def process_updates(updates):
-    for update in updates:
-        if update[0] == 4 and update[3] not in processing:
-            Thread(target=send_cloud, args=(update[3], update[6])).start()
-
-
 if __name__ == '__main__':
     print('Initializing longpoll connection...', end=' ')
-    longpoll = vk_group.messages.getLongPollServer()
+    longpoll = VkLongPoll(vk_group_session)
     print('Done')
-    while True:
-        try:
-            response = requests.get('https://{}?act=a_check&key={}&ts={}&wait=25%mode=128'.format(
-                longpoll['server'],
-                longpoll['key'],
-                longpoll['ts']
-            ), timeout=25).json()
-            longpoll['ts'] = response['ts'] if 'ts' in response else longpoll['ts']
-            Thread(target=process_updates, args=(response['updates'],)).start()
-        except Exception as e:
-            while True:
-                try:
-                    longpoll = vk_group.messages.getLongPollServer()
-                    break
-                except Exception:
-                    continue
-            print(e)
-            continue
+    for event in longpoll.listen():
+        if event.to_me and event.type == VkEventType.MESSAGE_NEW and event.user_id not in processing:
+            print(event.user_id, event.text)
+            Thread(target=send_cloud, args=(event.user_id, event.text)).start()
