@@ -1,4 +1,3 @@
-
 # coding: utf-8
 
 # In[1]:
@@ -27,17 +26,22 @@ remove_words = ['год']
 
 processing = []
 
+
 def cloud(user_id):
     wall = tools.get_all('wall.get', 100, {'owner_id': user_id})['items']
+    wall = list(filter(lambda x: datetime.fromtimestamp(x['date']).year == 2017, wall))
+
     tokenizer = RegexpTokenizer('[а-яА-ЯёЁ]+')
     morph = pymorphy2.MorphAnalyzer()
+
     def transform(sentence):
         return map(lambda x: morph.parse(x)[0].normal_form.replace('ё', 'е'),
-            filter(
-                lambda x: len(x) > 2 and 'NOUN' in morph.parse(x)[0].tag,
-                tokenizer.tokenize(sentence.replace('\xa0', ' '))
-            )
-        )
+                   filter(
+                       lambda x: len(x) > 2 and 'NOUN' in morph.parse(x)[0].tag,
+                       tokenizer.tokenize(sentence.replace('\xa0', ' '))
+                   )
+                   )
+
     top_words = []
     for post in wall:
         if 'text' in post:
@@ -49,8 +53,10 @@ def cloud(user_id):
     top_words = list(filter(lambda x: x.lower() not in remove_words, top_words))
     if not top_words:
         return
+
     def color_func(word, font_size, position, orientation, random_state=None, **kwargs):
         return "hsl(%d, 100%%, %d%%)" % (random.randint(0, 360), random.randint(20, 50))
+
     sw = (stopwords.words('russian') + stopwords.words('english') + remove_words)
     wordcloud = WordCloud(
         max_words=200,
@@ -66,33 +72,37 @@ def cloud(user_id):
     wordcloud.to_file('clouds/{}.jpg'.format(user_id))
     return open('clouds/{}.jpg'.format(user_id), 'rb'), wall
 
-def send_cloud(user_id):
+
+def send_cloud(user_id, message):
     processing.append(user_id)
+
+    print(processing)
+
+    if message.lower() != 'облако':
+        vk_group.messages.send(user_id=user_id, message='Если ты хочешь получить свое облако тегов за 2018 '
+                                                        'год, отправь мне слово "облако" без кавычек 🙃')
+        return
+
     print('Generating cloud for', user_id)
     try:
         if not vk.groups.isMember(group_id=config.group_id, user_id=user_id):
-            vk_group.messages.send(user_id=user_id, message='Чтобы составить облако тегов, подпишись на меня https://vk.com/wordcloud2017 🙄')
+            vk_group.messages.send(user_id=user_id,
+                                   message='Чтобы составить облако тегов, '
+                                           'подпишись на меня https://vk.com/wordwcloud 🙄')
             time.sleep(1)
-            vk_group.messages.send(user_id=user_id, message='Когда будешь готов, снова отправь кодовое слово "облако" 😊')
+            vk_group.messages.send(user_id=user_id,
+                                   message='Когда будешь готов, снова отправь кодовое слово "облако" 😊')
             processing.remove(user_id)
             time.sleep(5)
             return
         if len(vk.wall.get(owner_id=user_id, count=1)['items']) == 0:
-            vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов☹️')
+            vk_group.messages.send(user_id=user_id,
+                                   message='Похоже, у тебя недостаточно записей на стене '
+                                           'для составления облака тегов☹️')
             processing.remove(user_id)
             time.sleep(5)
             return
-        else:
-            latest = vk.wall.get(owner_id=user_id, count=1)['items'][0]
-            if not latest['text']:
-                if 'copy_history' in latest:
-                    for copy in latest['copy_history']:
-                        if 'text' not in copy:
-                            vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов☹️')
-                            processing.remove(user_id)
-                            time.sleep(5)
-                            return
-        vk_group.messages.send(user_id=user_id, message='Посмотрим, что тебя интересует больше всего 😋')
+        vk_group.messages.send(user_id=user_id, message='Посмотрим, что тебя интересвало в 2018 году больше всего 😋')
         user = vk.users.get(user_ids=user_id)[0]
         user_id = user['id']
         name = user['first_name'] + ' ' + user['last_name']
@@ -100,23 +110,33 @@ def send_cloud(user_id):
         DATA_UPLOAD_URL = data['upload_url']
         clouded = cloud(user_id)
         if not clouded:
-            vk_group.messages.send(user_id=user_id, message='Похоже, у тебя недостаточно записей на стене для составления облака тегов ☹️')
+            vk_group.messages.send(user_id=user_id,
+                                   message='Похоже, у тебя недостаточно записей на стене '
+                                           'для составления облака тегов ☹️')
             time.sleep(5)
             return
         clouded, wall = clouded
         r = requests.post(DATA_UPLOAD_URL, files={'photo': clouded}).json()
-        photo = vk.photos.save(server=r['server'], photos_list=r['photos_list'], group_id=r['gid'], album_id=r['aid'], hash=r['hash'])[0]
-        vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍', attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
+        photo = vk.photos.save(server=r['server'], photos_list=r['photos_list'], group_id=r['gid'], album_id=r['aid'],
+                               hash=r['hash'])[0]
+        vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍',
+                               attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
         post_id = None
-        if not collection.find_one({'user_id': user_id, 'timestamp': {'$gt': time.time()-86400}}):
+        if not collection.find_one({'user_id': user_id, 'timestamp': {'$gt': time.time() - 86400}}):
             try:
-                post_id = vk.wall.post(owner_id=-config.group_id, from_group=1, message='Облако тегов для *id{}({})'.format(user_id, name), attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
+                post_id = vk.wall.post(owner_id=-config.group_id, from_group=1,
+                                       message='Облако тегов для *id{}({})'.format(user_id, name),
+                                       attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
             except Exception:
-                vk_group.messages.send(user_id=user_id, message='Похоже, я превысил лимит количества постов на сегодня 😭')
-                vk_group.messages.send(user_id=user_id, message='Создай новое облако завтра, и я выложу его на стену группы 😎')
+                vk_group.messages.send(user_id=user_id,
+                                       message='Похоже, я превысил лимит количества постов на сегодня 😭')
+                vk_group.messages.send(user_id=user_id,
+                                       message='Создай новое облако завтра, и я выложу его на стену группы 😎')
         if post_id:
-            collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall, 'post': post_id, 'timestamp': time.time()})
+            collection.insert(
+                {'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall, 'post': post_id,
+                 'timestamp': time.time()})
             vk_group.messages.send(user_id=user_id, attachment='wall{}_{}'.format(photo['owner_id'], post_id))
         else:
             collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'wall': wall})
@@ -124,14 +144,15 @@ def send_cloud(user_id):
         print('Finished cloud for', user_id)
     except Exception as e:
         processing.remove(user_id)
-        print('Finished cloud for', user_id)
+        print('Finished cloud for', user_id, 'with error')
         raise e
+
 
 def process_updates(updates):
     for update in updates:
         if update[0] == 4 and update[3] not in processing:
-            if update[6].lower() == 'облако':
-                Thread(target=send_cloud, args=(update[3], )).start()
+            Thread(target=send_cloud, args=(update[3], update[6])).start()
+
 
 if __name__ == '__main__':
     longpoll = vk_group.messages.getLongPollServer()
@@ -143,7 +164,7 @@ if __name__ == '__main__':
                 longpoll['ts']
             ), timeout=25).json()
             longpoll['ts'] = response['ts'] if 'ts' in response else longpoll['ts']
-            Thread(target=process_updates, args=(response['updates'], )).start()
+            Thread(target=process_updates, args=(response['updates'],)).start()
         except Exception as e:
             while True:
                 try:
