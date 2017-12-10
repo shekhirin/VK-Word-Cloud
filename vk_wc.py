@@ -116,8 +116,6 @@ def send_cloud(user_id, message):
         user = vk.users.get(user_ids=user_id)[0]
         user_id = user['id']
         name = user['first_name'] + ' ' + user['last_name']
-        data = vk.photos.getUploadServer(album_id=config.album_id, group_id=config.group_id)
-        DATA_UPLOAD_URL = data['upload_url']
         clouded = cloud(user_id)
         if not clouded:
             vk_group.messages.send(user_id=user_id,
