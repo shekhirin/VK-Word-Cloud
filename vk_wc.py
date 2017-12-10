@@ -155,8 +155,9 @@ def process_updates(updates):
 
 
 if __name__ == '__main__':
-    print('Initializing longpoll connection...')
+    print('Initializing longpoll connection...', end=' ')
     longpoll = vk_group.messages.getLongPollServer()
+    print('Done')
     while True:
         try:
             response = requests.get('https://{}?act=a_check&key={}&ts={}&wait=25%mode=128'.format(
