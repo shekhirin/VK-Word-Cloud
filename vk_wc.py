@@ -1,16 +1,10 @@
-# coding: utf-8
-
-# In[1]:
-
 import requests
 from threading import Thread
-import os
 import vk_api
 from datetime import datetime
 import time
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
-import nltk
 from wordcloud import WordCloud
 import random
 import pymorphy2
