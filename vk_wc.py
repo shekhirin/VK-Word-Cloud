@@ -139,7 +139,8 @@ def send_cloud(user_id, message):
                 post_id = vk.wall.post(owner_id=-config.group_id, from_group=1,
                                        message='Облако тегов для *id{}({})'.format(user_id, name),
                                        attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
-            except Exception:
+            except Exception as e:
+                print(e)
                 vk_group.messages.send(user_id=user_id,
                                        message='Похоже, я превысил лимит количества постов на сегодня 😭')
                 vk_group.messages.send(user_id=user_id,
