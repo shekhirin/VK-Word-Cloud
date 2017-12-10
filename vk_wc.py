@@ -135,7 +135,8 @@ def send_cloud(user_id, message):
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
 
         post_id = None
-        if not collection.find_one({'user_id': user_id, 'timestamp': {'$gt': time.time() - 86400}}):
+        if len(wall) > 100 and \
+                not collection.find_one({'user_id': user_id, 'timestamp': {'$gt': time.time() - 86400}}):
             try:
                 post_id = vk.wall.post(owner_id='-{}'.format(config.group_id), from_group=1,
                                        message='Облако тегов для *id{}({})'.format(user_id, name),
