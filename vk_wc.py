@@ -81,7 +81,7 @@ def cloud(user_id):
     img_arr = io.BytesIO()
     wordcloud.save(img_arr, format='PNG')
     img_arr.seek(0)
-    return img_arr, wall
+    return img_arr, wall, top_words
 
 
 def send_cloud(user_id, message):
@@ -124,7 +124,7 @@ def send_cloud(user_id, message):
                                            'для составления облака тегов ☹️')
             time.sleep(5)
             return
-        clouded, wall = clouded
+        clouded, wall, top_words = clouded
         photo = vk_upload.photo(
             clouded,
             album_id=config.album_id,
@@ -135,7 +135,7 @@ def send_cloud(user_id, message):
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
 
         post_id = None
-        if len(wall) > 100 and \
+        if len(top_words) > 20 and \
                 not collection.find_one({'user_id': user_id, 'timestamp': {'$gt': time.time() - 86400}}):
             try:
                 post_id = vk.wall.post(owner_id='-{}'.format(config.group_id), from_group=1,
