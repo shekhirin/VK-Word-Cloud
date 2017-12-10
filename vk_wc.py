@@ -88,7 +88,7 @@ def send_cloud(user_id, message):
         if not vk.groups.isMember(group_id=config.group_id, user_id=user_id):
             vk_group.messages.send(user_id=user_id,
                                    message='Чтобы составить облако тегов, '
-                                           'подпишись на меня https://vk.com/wordwcloud 🙄')
+                                           'подпишись на меня https://vk.com/wwcloud 🙄')
             time.sleep(1)
             vk_group.messages.send(user_id=user_id,
                                    message='Когда будешь готов, снова отправь кодовое слово "облако" 😊')
