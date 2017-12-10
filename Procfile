@@ -1,1 +1,1 @@
-bot: python3 vk_wc.py
+app: python3 vk_wc.py
