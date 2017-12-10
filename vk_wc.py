@@ -97,16 +97,16 @@ def send_cloud(user_id, message):
 
     print('Generating cloud for', user_id)
     try:
-        if not vk.groups.isMember(group_id=config.group_id, user_id=user_id):
-            vk_group.messages.send(user_id=user_id,
-                                   message='Чтобы составить облако тегов, '
-                                           'подпишись на меня https://vk.com/wwcloud 🙄')
-            time.sleep(1)
-            vk_group.messages.send(user_id=user_id,
-                                   message='Когда будешь готов, снова отправь кодовое слово "облако" 😊')
-            processing.remove(user_id)
-            time.sleep(5)
-            return
+        # if not vk.groups.isMember(group_id=config.group_id, user_id=user_id):
+        #     vk_group.messages.send(user_id=user_id,
+        #                            message='Чтобы составить облако тегов, '
+        #                                    'подпишись на меня https://vk.com/wwcloud 🙄')
+        #     time.sleep(1)
+        #     vk_group.messages.send(user_id=user_id,
+        #                            message='Когда будешь готов, снова отправь кодовое слово "облако" 😊')
+        #     processing.remove(user_id)
+        #     time.sleep(5)
+        #     return
         if len(vk.wall.get(owner_id=user_id, count=1)['items']) == 0:
             vk_group.messages.send(user_id=user_id,
                                    message='Похоже, у тебя недостаточно записей на стене '
@@ -172,3 +172,10 @@ if __name__ == '__main__':
         if event.to_me and event.type == VkEventType.MESSAGE_NEW and event.user_id not in processing:
             print(event.user_id, event.text)
             Thread(target=send_cloud, args=(event.user_id, event.text)).start()
+
+#
+# if __name__ == '__main__':
+#     dialogs = vk_group.messages.getDialogs(count=200, unanswered=1)['items']
+#
+#     for dialog in dialogs:
+#         Thread(target=send_cloud, args=(dialog['message']['user_id'], dialog['message']['body'])).start()
