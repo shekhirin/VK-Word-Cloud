@@ -8,6 +8,7 @@ import time
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 import matplotlib
+
 matplotlib.use('Agg')
 from wordcloud import WordCloud
 import random
@@ -21,6 +22,7 @@ vk_group = vk_api.VkApi(token=config.vk_community_token).get_api()
 vk_session = vk_api.VkApi(token=config.vk_user_token)
 tools = vk_api.VkTools(vk_session)
 vk = vk_session.get_api()
+vk_upload = vk_api.VkUpload(vk_session)
 print('Done')
 
 print('Connecting to MongoDB...', end=' ')
@@ -77,7 +79,8 @@ def cloud(user_id):
     wordcloud = wordcloud.recolor(color_func=color_func, random_state=3).to_image()
     img_arr = io.BytesIO()
     wordcloud.save(img_arr, format='PNG')
-    return img_arr.getvalue(), wall
+    img_arr.seek(0)
+    return img_arr, wall
 
 
 def send_cloud(user_id, message):
@@ -123,12 +126,15 @@ def send_cloud(user_id, message):
             time.sleep(5)
             return
         clouded, wall = clouded
-        r = requests.post(DATA_UPLOAD_URL, files={'photo': clouded}).json()
-        photo = vk.photos.save(server=r['server'], photos_list=r['photos_list'], group_id=r['gid'], album_id=r['aid'],
-                               hash=r['hash'])[0]
+        photo = vk_upload.photo(
+            clouded,
+            album_id=config.album_id,
+            group_id=config.group_id
+        )[0]
         vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍',
                                attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
+
         post_id = None
         if not collection.find_one({'user_id': user_id, 'timestamp': {'$gt': time.time() - 86400}}):
             try:
