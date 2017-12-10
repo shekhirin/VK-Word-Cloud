@@ -10,6 +10,7 @@ import random
 import pymorphy2
 from pymongo import MongoClient
 import config
+import _tkinter
 
 print('Connecting to VK...', end=' ')
 vk_group = vk_api.VkApi(token=config.vk_community_token).get_api()
