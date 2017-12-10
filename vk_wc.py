@@ -149,12 +149,21 @@ def send_cloud(user_id, message):
                 vk_group.messages.send(user_id=user_id,
                                        message='Создай новое облако завтра, и я выложу его на стену группы 😎')
         if post_id:
-            collection.insert(
-                {'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id'], 'post': post_id,
-                 'timestamp': time.time()})
+            collection.insert({
+                'user_id': user_id,
+                'owner_id': photo['owner_id'],
+                'id': photo['id'],
+                'post': post_id,
+                 'timestamp': time.time()
+            })
             vk_group.messages.send(user_id=user_id, attachment='wall{}_{}'.format(photo['owner_id'], post_id))
         else:
-            collection.insert({'user_id': user_id, 'owner_id': photo['owner_id'], 'id': photo['id']})
+            collection.insert({
+                'user_id': user_id,
+                'owner_id': photo['owner_id'],
+                'id': photo['id'],
+                'timestamp': time.time()
+            })
         processing.remove(user_id)
         print('Finished cloud for', user_id)
         return
