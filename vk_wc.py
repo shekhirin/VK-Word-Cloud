@@ -136,7 +136,7 @@ def send_cloud(user_id, message):
         post_id = None
         if not collection.find_one({'user_id': user_id, 'timestamp': {'$gt': time.time() - 86400}}):
             try:
-                post_id = vk.wall.post(owner_id=-config.group_id, from_group=1,
+                post_id = vk.wall.post(owner_id='-{}'.format(config.group_id), from_group=1,
                                        message='Облако тегов для *id{}({})'.format(user_id, name),
                                        attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
             except Exception as e:
