@@ -1,3 +1,5 @@
+import os
+
 import requests
 from threading import Thread
 import vk_api
@@ -25,6 +27,7 @@ collection = MongoClient(config.mongo_host)[config.mongo_db]['photos']
 print('Done')
 
 remove_words = ['год']
+DIR = os.path.dirname(__file__)
 
 processing = []
 
@@ -71,8 +74,8 @@ def cloud(user_id):
         prefer_horizontal=0.95
     ).generate(' '.join(top_words))
     wordcloud = wordcloud.recolor(color_func=color_func, random_state=3)
-    wordcloud.to_file('clouds/{}.jpg'.format(user_id))
-    return open('clouds/{}.jpg'.format(user_id), 'rb'), wall
+    wordcloud.to_file(os.path.join(DIR, 'clouds/{}.jpg'.format(user_id)))
+    return open(os.path.join(DIR, 'clouds/{}.jpg'.format(user_id)), 'rb'), wall
 
 
 def send_cloud(user_id, message):
