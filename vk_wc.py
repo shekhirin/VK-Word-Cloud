@@ -1,4 +1,6 @@
 import os
+from queue import Queue
+from threading import Thread
 
 import requests
 from concurrent.futures import ThreadPoolExecutor
@@ -176,22 +178,45 @@ def send_cloud(user_id, message):
         raise e
 
 
+def worker():
+    while True:
+        # Получаем задание из очереди
+        item = q.get()
+        item[0](*item[1])
+        # Сообщаем о выполненном задании
+        q.task_done()
+
+
 if __name__ == '__main__':
+    q = Queue()
+    for i in range(10):
+        t = Thread(target=worker)
+        t.setDaemon(True)
+        t.start()
+
     print('Initializing longpoll connection...', end=' ')
     longpoll = VkLongPoll(vk_group_session)
     print('Done')
 
-    with ThreadPoolExecutor() as pool:
-        for event in longpoll.listen():
-            if event.to_me and event.type == VkEventType.MESSAGE_NEW and event.user_id not in processing:
-                print(event.user_id, event.text)
-                pool.submit(fn=send_cloud, args=(event.user_id, event.text))
+    for event in longpoll.listen():
+        if event.to_me and event.type == VkEventType.MESSAGE_NEW and event.user_id not in processing:
+            print(event.user_id, event.text)
+            q.put((send_cloud, (event.user_id, event.text)))
+    q.join()
 
 
 # if __name__ == '__main__':
+#     q = Queue()
+#     for i in range(10):
+#         t = Thread(target=worker)
+#         t.setDaemon(True)
+#         t.start()
+#
 #     dialogs = vk_api.VkTools(vk_group_session).get_all('messages.getDialogs', 200)['items']
-#     with ThreadPoolExecutor() as pool:
-#         for dialog in dialogs:
-#             # if dialog['message']['date'] < datetime(2017, 3, 1).timestamp():
-#             if dialog['message']['body'].lower() == 'облако':
-#                 pool.submit(fn=send_cloud, args=(dialog['message']['user_id'], dialog['message']['body']))
+#     for dialog in dialogs:
+#         # if dialog['message']['date'] < datetime(2017, 3, 1).timestamp():
+#         if dialog['message']['body'].lower() == 'облако':
+#             q.put((send_cloud, (dialog['message']['user_id'], dialog['message']['body'])))
+#         if dialog['message']['body'].startswith('Посмотрим'):
+#             q.put((send_cloud, (dialog['message']['user_id'], 'облако')))
+#     q.join()
