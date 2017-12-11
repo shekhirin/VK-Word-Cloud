@@ -153,6 +153,12 @@ def send_cloud(user_id, message):
                                        message='Похоже, я превысил лимит количества постов на сегодня 😭')
                 vk_group.messages.send(user_id=user_id,
                                        message='Создай новое облако завтра, и я выложу его на стену группы 😎')
+
+        vk_group.messages.send(user_id=user_id,
+                               message='Кстати, у нас в группе скоро будет проходить розыгрыш НАСТОЯЩЕГО облака, '
+                                       'не пропусти 🎁🎁🎁',
+                               attachment=['audio371745464_456500688'])
+
         if post_id:
             collection.insert({
                 'user_id': user_id,
@@ -203,20 +209,3 @@ if __name__ == '__main__':
             print(event.user_id, event.text)
             q.put((send_cloud, (event.user_id, event.text)))
     q.join()
-
-
-# if __name__ == '__main__':
-#     q = Queue()
-#     for i in range(10):
-#         t = Thread(target=worker)
-#         t.setDaemon(True)
-#         t.start()
-#
-#     dialogs = vk_api.VkTools(vk_group_session).get_all('messages.getDialogs', 200)['items']
-#     for dialog in dialogs:
-#         # if dialog['message']['date'] < datetime(2017, 3, 1).timestamp():
-#         if dialog['message']['body'].lower() == 'облако':
-#             q.put((send_cloud, (dialog['message']['user_id'], dialog['message']['body'])))
-#         if dialog['message']['body'].startswith('Посмотрим'):
-#             q.put((send_cloud, (dialog['message']['user_id'], 'облако')))
-#     q.join()
