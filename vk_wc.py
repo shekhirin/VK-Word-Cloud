@@ -157,7 +157,7 @@ def send_cloud(user_id, message):
         vk_group.messages.send(user_id=user_id,
                                message='Кстати, у нас в группе скоро будет проходить розыгрыш НАСТОЯЩЕГО облака, '
                                        'не пропусти 🎁🎁🎁',
-                               attachment=['audio371745464_456500688'])
+                               attachment=['audio179996500_456239257'])
 
         if post_id:
             collection.insert({
@@ -184,7 +184,7 @@ def send_cloud(user_id, message):
         raise e
 
 
-def worker():
+def worker(q):
     while True:
         # Получаем задание из очереди
         item = q.get()
@@ -196,7 +196,7 @@ def worker():
 if __name__ == '__main__':
     q = Queue()
     for i in range(10):
-        t = Thread(target=worker)
+        t = Thread(target=worker, args=(q, ))
         t.setDaemon(True)
         t.start()
 

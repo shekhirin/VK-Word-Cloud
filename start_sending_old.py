@@ -3,12 +3,15 @@ from threading import Thread
 
 import vk_api
 
-from vk_wc import send_cloud, vk_group_session, worker
+from vk_wc import send_cloud, worker
+import config
+
+vk_group_session = vk_api.VkApi(token=config.vk_community_token)
 
 if __name__ == '__main__':
     q = Queue()
     for i in range(10):
-        t = Thread(target=worker)
+        t = Thread(target=worker, args=(q, ))
         t.setDaemon(True)
         t.start()
 
