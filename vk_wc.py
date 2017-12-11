@@ -80,7 +80,7 @@ def cloud(user_id):
         height=1000,
         stopwords=sw,
         prefer_horizontal=0.95,
-        font_path='font.otf'
+        font_path='font.ttf'
     ).generate(' '.join(top_words).upper())
     wordcloud = wordcloud.recolor(color_func=color_func, random_state=3).to_image()
     img_arr = io.BytesIO()
