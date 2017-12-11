@@ -195,7 +195,7 @@ def worker(q):
     while True:
         # Получаем задание из очереди
         item = q.get()
-        item[0](*item[1])
+        item[0](*item[1], **item[2])
         # Сообщаем о выполненном задании
         q.task_done()
 
@@ -214,5 +214,5 @@ if __name__ == '__main__':
     for event in longpoll.listen():
         if event.to_me and event.type == VkEventType.MESSAGE_NEW and event.user_id not in processing:
             print(event.user_id, event.text)
-            q.put((send_cloud, (event.user_id, event.text)))
+            q.put((send_cloud, (event.user_id, event.text), {}))
     q.join()
