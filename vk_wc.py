@@ -64,8 +64,11 @@ def cloud(user_id):
     if not top_words:
         return
 
+    # def color_func(word, font_size, position, orientation, random_state=None, **kwargs):
+    #     return "hsl(%d, 100%%, %d%%)" % (random.randint(0, 360), random.randint(20, 50))
+
     def color_func(word, font_size, position, orientation, random_state=None, **kwargs):
-        return "hsl(%d, 100%%, %d%%)" % (random.randint(0, 360), random.randint(20, 50))
+        return "rgb(255, 255, 255)"
 
     sw = (stopwords.words('russian') + stopwords.words('english') + remove_words)
     wordcloud = WordCloud(
@@ -77,8 +80,7 @@ def cloud(user_id):
         height=1000,
         stopwords=sw,
         prefer_horizontal=0.95,
-        font_path='font.ttf',
-        colormap='prism'
+        font_path='font.ttf'
     ).generate(' '.join(top_words).upper())
     wordcloud = wordcloud.recolor(color_func=color_func, random_state=3).to_image()
     img_arr = io.BytesIO()
