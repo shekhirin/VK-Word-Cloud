@@ -1,7 +1,7 @@
 import os
 
 import requests
-from threading import Thread
+from concurrent.futures import ThreadPoolExecutor
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from datetime import datetime
@@ -157,7 +157,7 @@ def send_cloud(user_id, message):
                 'owner_id': photo['owner_id'],
                 'id': photo['id'],
                 'post': post_id,
-                 'timestamp': time.time()
+                'timestamp': time.time()
             })
             vk_group.messages.send(user_id=user_id, attachment='wall{}_{}'.format(photo['owner_id'], post_id))
         else:
@@ -177,17 +177,20 @@ def send_cloud(user_id, message):
 
 
 if __name__ == '__main__':
+    pool = ThreadPoolExecutor()
+
     print('Initializing longpoll connection...', end=' ')
     longpoll = VkLongPoll(vk_group_session)
     print('Done')
     for event in longpoll.listen():
         if event.to_me and event.type == VkEventType.MESSAGE_NEW and event.user_id not in processing:
             print(event.user_id, event.text)
-            Thread(target=send_cloud, args=(event.user_id, event.text)).start()
+            pool.submit(fn=send_cloud, args=(event.user_id, event.text))
 
-# #
+
 # if __name__ == '__main__':
-#     dialogs = vk_group.messages.getDialogs(count=200, unanswered=1)['items']
+#     dialogs = vk_api.VkTools(vk_group_session).get_all('messages.getDialogs', 200)['items']
 #
 #     for dialog in dialogs:
-#         Thread(target=send_cloud, args=(dialog['message']['user_id'], dialog['message']['body'])).start()
+#         if dialog['message']['date'] < datetime(2017, 3, 1).timestamp():
+#             Thread(target=send_cloud, args=(dialog['message']['user_id'], dialog['message']['body'])).start()
