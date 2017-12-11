@@ -128,6 +128,7 @@ def send_cloud(user_id, message):
             vk_group.messages.send(user_id=user_id,
                                    message='Похоже, у тебя недостаточно записей на стене '
                                            'для составления облака тегов ☹️')
+            processing.remove(user_id)
             time.sleep(5)
             return
         clouded, wall, top_words = clouded
