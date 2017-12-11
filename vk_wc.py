@@ -139,7 +139,7 @@ def send_cloud(user_id, message):
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
 
         post_id = None
-        if len(top_words) > 20 and \
+        if len(top_words) > 50 and \
                 not collection.find_one({'user_id': user_id, 'timestamp': {'$gt': time.time() - 86400}}):
             try:
                 post_id = vk.wall.post(owner_id='-{}'.format(config.group_id), from_group=1,
