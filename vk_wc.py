@@ -177,20 +177,21 @@ def send_cloud(user_id, message):
 
 
 if __name__ == '__main__':
-    pool = ThreadPoolExecutor()
-
     print('Initializing longpoll connection...', end=' ')
     longpoll = VkLongPoll(vk_group_session)
     print('Done')
-    for event in longpoll.listen():
-        if event.to_me and event.type == VkEventType.MESSAGE_NEW and event.user_id not in processing:
-            print(event.user_id, event.text)
-            pool.submit(fn=send_cloud, args=(event.user_id, event.text))
+
+    with ThreadPoolExecutor() as pool:
+        for event in longpoll.listen():
+            if event.to_me and event.type == VkEventType.MESSAGE_NEW and event.user_id not in processing:
+                print(event.user_id, event.text)
+                pool.submit(fn=send_cloud, args=(event.user_id, event.text))
 
 
 # if __name__ == '__main__':
 #     dialogs = vk_api.VkTools(vk_group_session).get_all('messages.getDialogs', 200)['items']
-#
-#     for dialog in dialogs:
-#         if dialog['message']['date'] < datetime(2017, 3, 1).timestamp():
-#             Thread(target=send_cloud, args=(dialog['message']['user_id'], dialog['message']['body'])).start()
+#     with ThreadPoolExecutor() as pool:
+#         for dialog in dialogs:
+#             # if dialog['message']['date'] < datetime(2017, 3, 1).timestamp():
+#             if dialog['message']['body'].lower() == 'облако':
+#                 pool.submit(fn=send_cloud, args=(dialog['message']['user_id'], dialog['message']['body']))
