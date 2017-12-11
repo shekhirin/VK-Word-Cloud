@@ -155,10 +155,16 @@ def send_cloud(user_id, message):
                 vk_group.messages.send(user_id=user_id,
                                        message='Создай новое облако завтра, и я выложу его на стену группы 😎')
 
-        vk_group.messages.send(user_id=user_id,
-                               message='Кстати, у нас в группе скоро будет проходить розыгрыш НАСТОЯЩЕГО облака, '
-                                       'не пропусти 🎁🎁🎁',
-                               attachment=['audio179996500_456239257'])
+        vk_group.messages.send(
+            user_id=user_id,
+            message='Кстати, у нас в группе скоро будет проходить розыгрыш НАСТОЯЩЕГО облака, '
+                    'не пропусти 🎁🎁🎁',
+            attachment=['audio179996500_456239257'] +
+                       (['wall-136503501_466'] if
+                        datetime.now().year == 2017 and
+                        datetime.now().month == 12 and
+                        datetime.now().day >= 12 else [])
+        )
 
         if post_id:
             collection.insert({
@@ -197,7 +203,7 @@ def worker(q):
 if __name__ == '__main__':
     q = Queue()
     for i in range(10):
-        t = Thread(target=worker, args=(q, ))
+        t = Thread(target=worker, args=(q,))
         t.setDaemon(True)
         t.start()
 
