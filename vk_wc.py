@@ -155,12 +155,6 @@ def send_cloud(user_id, message):
                 vk_group.messages.send(user_id=user_id,
                                        message='Создай новое облако завтра, и я выложу его на стену группы 😎')
 
-        vk_group.messages.send(
-            user_id=user_id,
-            message='Кстати, у нас в группе проходит конкурс, советую принять участие 😉',
-            attachment='wall-136503501_467'
-        )
-
         if post_id:
             collection.insert({
                 'user_id': user_id,
@@ -179,6 +173,13 @@ def send_cloud(user_id, message):
                 'timestamp': time.time(),
                 'length': len(top_words)
             })
+
+        vk_group.messages.send(
+            user_id=user_id,
+            message='Кстати, у нас в группе проходит конкурс, советую принять участие 😉',
+            attachment='wall-136503501_467'
+        )
+
         processing.remove(user_id)
         print('Finished cloud for', user_id)
         return
