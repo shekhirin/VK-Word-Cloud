@@ -25,7 +25,7 @@ if __name__ == '__main__':
             #     q.put((send_cloud, (dialog['message']['user_id'], dialog['message']['body']), {}))
             # if dialog['message']['body'].startswith('Посмотрим'):
             #     q.put((send_cloud, (dialog['message']['user_id'], 'облако'), {}))
-            if not dialog['message']['body'].startswith('Кстати'):
+            if dialog['message']['body'] != 'Кстати, у нас в группе проходит конкурс, советую принять участие 😉':
                 q.put((vk_group.messages.send, (),
                        {'user_id': dialog['message']['user_id'],
                         'message': 'Кстати, у нас в группе проходит конкурс, советую принять участие 😉',

@@ -142,7 +142,7 @@ def send_cloud(user_id, message):
         vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
 
         post_id = None
-        if len(top_words) > 50 and \
+        if len(top_words) > 100 and \
                 not collection.find_one({'user_id': user_id, 'timestamp': {'$gt': time.time() - 86400}}):
             try:
                 post_id = vk.wall.post(owner_id='-{}'.format(config.group_id), from_group=1,
@@ -167,7 +167,8 @@ def send_cloud(user_id, message):
                 'owner_id': photo['owner_id'],
                 'id': photo['id'],
                 'post': post_id,
-                'timestamp': time.time()
+                'timestamp': time.time(),
+                'length': len(top_words)
             })
             vk_group.messages.send(user_id=user_id, attachment='wall{}_{}'.format(photo['owner_id'], post_id))
         else:
@@ -175,7 +176,8 @@ def send_cloud(user_id, message):
                 'user_id': user_id,
                 'owner_id': photo['owner_id'],
                 'id': photo['id'],
-                'timestamp': time.time()
+                'timestamp': time.time(),
+                'length': len(top_words)
             })
         processing.remove(user_id)
         print('Finished cloud for', user_id)
