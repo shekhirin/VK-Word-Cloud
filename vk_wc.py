@@ -91,10 +91,11 @@ def cloud(user_id):
     return img_arr, wall, top_words
 
 
-def send_cloud(user_id, message):
+def send_cloud(user_id, message, send=True):
     if message.lower() != 'облако':
-        vk_group.messages.send(user_id=user_id, message='Если ты хочешь получить свое облако тегов за 2017 '
-                                                        'год, отправь мне слово "облако" без кавычек 🙃')
+        if send:
+            vk_group.messages.send(user_id=user_id, message='Если ты хочешь получить свое облако тегов за 2017 '
+                                                            'год, отправь мне слово "облако" без кавычек 🙃')
         time.sleep(5)
         return
 
@@ -113,21 +114,24 @@ def send_cloud(user_id, message):
         #     time.sleep(5)
         #     return
         if len(vk.wall.get(owner_id=user_id, count=1)['items']) == 0:
-            vk_group.messages.send(user_id=user_id,
-                                   message='Похоже, у тебя недостаточно записей на стене '
-                                           'для составления облака тегов☹️')
+            if send:
+                vk_group.messages.send(user_id=user_id,
+                                       message='Похоже, у тебя недостаточно записей на стене '
+                                               'для составления облака тегов☹️')
             processing.remove(user_id)
             time.sleep(5)
             return
-        vk_group.messages.send(user_id=user_id, message='Посмотрим, что тебя интересовало в 2017 году больше всего 😋')
+        if send:
+            vk_group.messages.send(user_id=user_id, message='Посмотрим, что тебя интересовало в 2017 году больше всего 😋')
         user = vk.users.get(user_ids=user_id)[0]
         user_id = user['id']
         name = user['first_name'] + ' ' + user['last_name']
         clouded = cloud(user_id)
         if not clouded:
-            vk_group.messages.send(user_id=user_id,
-                                   message='Похоже, у тебя недостаточно записей на стене '
-                                           'для составления облака тегов ☹️')
+            if send:
+                vk_group.messages.send(user_id=user_id,
+                                       message='Похоже, у тебя недостаточно записей на стене '
+                                               'для составления облака тегов ☹️')
             processing.remove(user_id)
             time.sleep(5)
             return
@@ -137,9 +141,10 @@ def send_cloud(user_id, message):
             album_id=config.album_id,
             group_id=config.group_id
         )[0]
-        vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍',
-                               attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
-        vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
+        if send:
+            vk_group.messages.send(user_id=user_id, message='А вот и твое облако тегов! 🌍',
+                                   attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
+            vk_group.messages.send(user_id=user_id, message='Не забудь рассказать друзьям 😉')
 
         post_id = None
         if len(top_words) > 100 and \
@@ -150,10 +155,11 @@ def send_cloud(user_id, message):
                                        attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
             except Exception as e:
                 print(e)
-                vk_group.messages.send(user_id=user_id,
-                                       message='Похоже, я превысил лимит количества постов на сегодня 😭')
-                vk_group.messages.send(user_id=user_id,
-                                       message='Создай новое облако завтра, и я выложу его на стену группы 😎')
+                if send:
+                    vk_group.messages.send(user_id=user_id,
+                                           message='Похоже, я превысил лимит количества постов на сегодня 😭')
+                    vk_group.messages.send(user_id=user_id,
+                                           message='Создай новое облако завтра, и я выложу его на стену группы 😎')
 
         if post_id:
             collection.insert({
@@ -164,7 +170,8 @@ def send_cloud(user_id, message):
                 'timestamp': time.time(),
                 'length': len(top_words)
             })
-            vk_group.messages.send(user_id=user_id, attachment='wall{}_{}'.format(photo['owner_id'], post_id))
+            if send:
+                vk_group.messages.send(user_id=user_id, attachment='wall{}_{}'.format(photo['owner_id'], post_id))
         else:
             collection.insert({
                 'user_id': user_id,
@@ -174,11 +181,12 @@ def send_cloud(user_id, message):
                 'length': len(top_words)
             })
 
-        vk_group.messages.send(
-            user_id=user_id,
-            message='Кстати, у нас в группе проходит конкурс, советую принять участие 😉',
-            attachment='wall-136503501_467'
-        )
+        # if send:
+        #     vk_group.messages.send(
+        #         user_id=user_id,
+        #         message='Кстати, у нас в группе проходит конкурс, советую принять участие 😉',
+        #         attachment='wall-136503501_467'
+        #     )
 
         processing.remove(user_id)
         print('Finished cloud for', user_id)
