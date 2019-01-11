@@ -6,7 +6,7 @@ import random
 import io
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
@@ -180,7 +180,6 @@ def send_cloud(user_id, message, send=True):
                                            random_id=random.randint(0, 99999999),
                                            message='Создай новое облако завтра, и я выложу его на стену группы 😎')
                     print('Removed (3) cloud from processing for', user_id)
-                    return -69
         if post_id:
             # collection.insert({
             #     'user_id': user_id,
@@ -224,9 +223,7 @@ def worker(q, old=False):
         # Получаем задание из очереди
         item = q.get()
         try:
-            response = item[0](*item[1], **item[2])
-            if response == -69 and old:
-                    os._exit(-69)
+            item[0](*item[1], **item[2])
         except Exception:
             pass
         # Сообщаем о выполненном задании

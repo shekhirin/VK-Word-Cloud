@@ -22,14 +22,14 @@ if __name__ == '__main__':
 
 
     def start_checking(conversations):
-        # users = [x['conversation']['peer']['id'] for x in conversations if
-        #          'unread_count' in x['conversation']
-        #          and x['last_message']['from_id'] == x['conversation']['peer']['id']
-        #          and x['conversation']['can_write']['allowed']]
-        users = vk_group.users.get(user_ids=','.join([str(x['conversation']['peer']['id']) for x in conversations if
-                                                      (datetime.datetime.now() - datetime.datetime.fromtimestamp(
-                                                          x['last_message']['date'])).days > 30]),
-                                   fields='sex,birthdate')
+        users = [x['conversation']['peer'] for x in conversations if
+                 ('unread_count' in x['conversation']
+                  or x['last_message']['from_id'] == x['conversation']['peer']['id'])
+                 and x['conversation']['can_write']['allowed']]
+        # users = vk_group.users.get(user_ids=','.join([str(x['conversation']['peer']['id']) for x in conversations if
+        #                                               (datetime.datetime.now() - datetime.datetime.fromtimestamp(
+        #                                                   x['last_message']['date'])).days > 30]),
+        #                            fields='sex,birthdate')
         users = [x['id'] for x in users]
         #
         # users = [53448, 984706, 5944, 143978, 877944]
@@ -49,7 +49,6 @@ if __name__ == '__main__':
 
         for user in users:
             q.put((send_cloud, (user, 'облако', True), {}))
-
 
     start_checking(vk_api.VkTools(vk_group_session).get_all('messages.getConversations', 200)['items'])
     q.join()
