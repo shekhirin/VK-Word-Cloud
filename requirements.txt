@@ -4,3 +4,4 @@ requests==2.21.0
 pymorphy2==0.8
 vk_api==11.3.0
 nltk==3.4
+matplotlib==3.0.2

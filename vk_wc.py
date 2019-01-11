@@ -13,6 +13,9 @@ from wordcloud import WordCloud
 import pymorphy2
 from pymongo import MongoClient
 import config
+import matplotlib
+
+matplotlib.use('Agg')
 
 print('Connecting to VK...', end=' ')
 vk_group_session = vk_api.VkApi(token=config.vk_community_token)
@@ -32,7 +35,7 @@ DIR = os.path.dirname(__file__)
 
 processing = []
 
-current_year = datetime.now().year-1 if datetime.now().month != 12 else datetime.now().year
+current_year = datetime.now().year - 1 if datetime.now().month != 12 else datetime.now().year
 
 
 def cloud(user_id):
@@ -93,7 +96,7 @@ def send_cloud(user_id, message, send=True):
             vk_group.messages.send(user_id=user_id,
                                    random_id=random.randint(0, 99999999),
                                    message=f'Если ты хочешь получить свое облако тегов за {current_year} '
-                                           'год, отправь мне слово "облако" без кавычек 🙃')
+                                   'год, отправь мне слово "облако" без кавычек 🙃')
         return
 
     processing.append(user_id)
