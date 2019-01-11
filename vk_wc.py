@@ -70,13 +70,13 @@ def cloud(user_id):
     #     return "hsl(%d, 100%%, %d%%)" % (random.randint(0, 360), random.randint(20, 50))
 
     def color_func(word, font_size, position, orientation, random_state=None, **kwargs):
-        return "rgb(255, 255, 255)"
+        return "rgb(0, 0, 0)"
 
     sw = (stopwords.words('russian') + stopwords.words('english') + remove_words)
     wordcloud = WordCloud(
         max_words=50,
         max_font_size=500,
-        background_color='black',
+        background_color='white',
         margin=5,
         width=1000,
         height=1000,
