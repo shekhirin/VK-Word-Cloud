@@ -91,6 +91,12 @@ def cloud(user_id):
 
 
 def send_cloud(user_id, message, send=True):
+    if user_id in processing:
+        if send:
+            vk_group.messages.send(user_id=user_id,
+                                   random_id=random.randint(0, 99999999),
+                                   message=f'Подожди, я составляю твое облако тегов')
+        return
     if message.lower() != 'облако':
         if send:
             vk_group.messages.send(user_id=user_id,

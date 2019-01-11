@@ -22,19 +22,16 @@ if __name__ == '__main__':
 
 
     def start_checking(conversations):
-        print(conversations)
-        users = [x['conversation']['peer']['id'] for x in conversations if
-                 'unread_count' in x['conversation']
-                 and x['last_message']['from_id'] == x['conversation']['peer']['id']
-                 and x['conversation']['can_write']['allowed']]
-        # users = vk_group.users.get(user_ids=','.join([str(x['message']['user_id']) for x in dialogs]),
-        #                            fields='sex,birthdate')
-        # users = [x['id'] for x in users if 'bdate' in x
-        #            and len(x['bdate'].split('.')) == 3
-        #            and int(x['bdate'].split('.')[2]) <= 1990]
-
+        # users = [x['conversation']['peer']['id'] for x in conversations if
+        #          'unread_count' in x['conversation']
+        #          and x['last_message']['from_id'] == x['conversation']['peer']['id']
+        #          and x['conversation']['can_write']['allowed']]
+        users = vk_group.users.get(user_ids=','.join([str(x['conversation']['peer']['id']) for x in conversations]),
+                                   fields='sex,birthdate')
+        users = [x['id'] for x in users]
+        #
         # users = [53448, 984706, 5944, 143978, 877944]
-
+        #
         # mutual = []
         # pairs = []
         # for user in users:
@@ -49,7 +46,7 @@ if __name__ == '__main__':
         # print(len(users))
 
         for user in users:
-            q.put((send_cloud, (int(user), 'облако', True), {}))
+            q.put((send_cloud, (user, 'облако', True), {}))
 
 
     start_checking(vk_api.VkTools(vk_group_session).get_all('messages.getConversations', 200)['items'])
