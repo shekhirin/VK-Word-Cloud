@@ -223,9 +223,12 @@ def worker(q, old=False):
     while True:
         # Получаем задание из очереди
         item = q.get()
-        response = item[0](*item[1], **item[2])
-        if response == -69 and old:
-                _thread.interrupt_main()
+        try:
+            response = item[0](*item[1], **item[2])
+            if response == -69 and old:
+                    _thread.interrupt_main()
+        except Exception:
+            pass
         # Сообщаем о выполненном задании
         q.task_done()
 
