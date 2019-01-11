@@ -1,3 +1,4 @@
+import _thread
 import os
 from queue import Queue
 from threading import Thread
@@ -179,7 +180,7 @@ def send_cloud(user_id, message, send=True):
                                            random_id=random.randint(0, 99999999),
                                            message='Создай новое облако завтра, и я выложу его на стену группы 😎')
                     print('Removed (3) cloud from processing for', user_id)
-
+                    return -69
         if post_id:
             # collection.insert({
             #     'user_id': user_id,
@@ -218,11 +219,13 @@ def send_cloud(user_id, message, send=True):
         raise e
 
 
-def worker(q):
+def worker(q, old=False):
     while True:
         # Получаем задание из очереди
         item = q.get()
-        item[0](*item[1], **item[2])
+        response = item[0](*item[1], **item[2])
+        if response == -69 and old:
+                _thread.interrupt_main()
         # Сообщаем о выполненном задании
         q.task_done()
 

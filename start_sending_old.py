@@ -17,7 +17,7 @@ vk = vk_session.get_api()
 if __name__ == '__main__':
     q = Queue()
     for i in range(10):
-        t = Thread(target=worker, args=(q,))
+        t = Thread(target=worker, args=(q, True))
         t.setDaemon(True)
         t.start()
 
