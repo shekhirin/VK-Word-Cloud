@@ -32,7 +32,7 @@ DIR = os.path.dirname(__file__)
 
 processing = []
 
-current_year = datetime.now().year
+current_year = datetime.now().year-1 if datetime.now().month != 12 else datetime.now().year
 
 
 def cloud(user_id):
@@ -122,87 +122,87 @@ def send_cloud(user_id, message, send=True):
                 print('Removed (1) cloud from processing for', user_id)
                 time.sleep(5)
                 return
+        if send:
+            vk_group.messages.send(user_id=user_id,
+                                   random_id=random.randint(0, 99999999),
+                                   message=f'Посмотрим, что тебя интересовало в {current_year} году больше всего 😋')
+        user = vk.users.get(user_ids=user_id)[0]
+        user_id = user['id']
+        name = user['first_name'] + ' ' + user['last_name']
+        clouded = cloud(user_id)
+        if not clouded:
             if send:
                 vk_group.messages.send(user_id=user_id,
                                        random_id=random.randint(0, 99999999),
-                                       message=f'Посмотрим, что тебя интересовало в {current_year} году больше всего 😋')
-            user = vk.users.get(user_ids=user_id)[0]
-            user_id = user['id']
-            name = user['first_name'] + ' ' + user['last_name']
-            clouded = cloud(user_id)
-            if not clouded:
+                                       message='Похоже, у тебя недостаточно записей на стене '
+                                               'для составления облака тегов ☹️')
+            processing.remove(user_id)
+            print('Removed (2) cloud from processing for', user_id)
+            time.sleep(5)
+            return
+        clouded, wall, top_words = clouded
+        photo = vk_upload.photo(
+            clouded,
+            album_id=config.album_id,
+            group_id=config.group_id
+        )[0]
+        if send:
+            vk_group.messages.send(user_id=user_id,
+                                   random_id=random.randint(0, 99999999), message='А вот и твое облако тегов! 🌍',
+                                   attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
+            vk_group.messages.send(user_id=user_id,
+                                   random_id=random.randint(0, 99999999), message='Не забудь рассказать друзьям 😉')
+
+        post_id = None
+        if len(top_words) > 100:
+            try:
+                post_id = vk.wall.post(owner_id='-{}'.format(config.group_id), from_group=1,
+                                       message='Облако тегов для *id{}({})'.format(user_id, name),
+                                       attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
+            except Exception as e:
+                processing.remove(user_id)
+                print(e)
                 if send:
                     vk_group.messages.send(user_id=user_id,
                                            random_id=random.randint(0, 99999999),
-                                           message='Похоже, у тебя недостаточно записей на стене '
-                                                   'для составления облака тегов ☹️')
-                processing.remove(user_id)
-                print('Removed (2) cloud from processing for', user_id)
-                time.sleep(5)
-                return
-            clouded, wall, top_words = clouded
-            photo = vk_upload.photo(
-                clouded,
-                album_id=config.album_id,
-                group_id=config.group_id
-            )[0]
+                                           message='Похоже, я превысил лимит количества постов на сегодня 😭')
+                    vk_group.messages.send(user_id=user_id,
+                                           random_id=random.randint(0, 99999999),
+                                           message='Создай новое облако завтра, и я выложу его на стену группы 😎')
+                    print('Removed (3) cloud from processing for', user_id)
+
+        if post_id:
+            # collection.insert({
+            #     'user_id': user_id,
+            #     'owner_id': photo['owner_id'],
+            #     'id': photo['id'],
+            #     'post': post_id,
+            #     'timestamp': time.time(),
+            #     'length': len(top_words)
+            # })
             if send:
                 vk_group.messages.send(user_id=user_id,
-                                       random_id=random.randint(0, 99999999), message='А вот и твое облако тегов! 🌍',
-                                       attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
-                vk_group.messages.send(user_id=user_id,
-                                       random_id=random.randint(0, 99999999), message='Не забудь рассказать друзьям 😉')
+                                       random_id=random.randint(0, 99999999),
+                                       attachment='wall{}_{}'.format(photo['owner_id'], post_id))
+        # else:
+        #     collection.insert({
+        #         'user_id': user_id,
+        #         'owner_id': photo['owner_id'],
+        #         'id': photo['id'],
+        #         'timestamp': time.time(),
+        #         'length': len(top_words)
+        #     })
 
-            post_id = None
-            if len(top_words) > 100:
-                try:
-                    post_id = vk.wall.post(owner_id='-{}'.format(config.group_id), from_group=1,
-                                           message='Облако тегов для *id{}({})'.format(user_id, name),
-                                           attachments='photo{}_{}'.format(photo['owner_id'], photo['id']))['post_id']
-                except Exception as e:
-                    processing.remove(user_id)
-                    print(e)
-                    if send:
-                        vk_group.messages.send(user_id=user_id,
-                                               random_id=random.randint(0, 99999999),
-                                               message='Похоже, я превысил лимит количества постов на сегодня 😭')
-                        vk_group.messages.send(user_id=user_id,
-                                               random_id=random.randint(0, 99999999),
-                                               message='Создай новое облако завтра, и я выложу его на стену группы 😎')
-                        print('Removed (3) cloud from processing for', user_id)
+        # if send:
+        #     vk_group.messages.send(
+        #         user_id=user_id,
+        #         random_id=random.randint(0, 99999999),
+        #         message='Кстати, у нас в группе проходит конкурс, советую принять участие 😉',
+        #         attachment='wall-136503501_467'
+        #     )
 
-            if post_id:
-                # collection.insert({
-                #     'user_id': user_id,
-                #     'owner_id': photo['owner_id'],
-                #     'id': photo['id'],
-                #     'post': post_id,
-                #     'timestamp': time.time(),
-                #     'length': len(top_words)
-                # })
-                if send:
-                    vk_group.messages.send(user_id=user_id,
-                                           random_id=random.randint(0, 99999999),
-                                           attachment='wall{}_{}'.format(photo['owner_id'], post_id))
-            # else:
-            #     collection.insert({
-            #         'user_id': user_id,
-            #         'owner_id': photo['owner_id'],
-            #         'id': photo['id'],
-            #         'timestamp': time.time(),
-            #         'length': len(top_words)
-            #     })
-
-            # if send:
-            #     vk_group.messages.send(
-            #         user_id=user_id,
-            #         random_id=random.randint(0, 99999999),
-            #         message='Кстати, у нас в группе проходит конкурс, советую принять участие 😉',
-            #         attachment='wall-136503501_467'
-            #     )
-
-            processing.remove(user_id)
-            print('Finished cloud for', user_id)
+        processing.remove(user_id)
+        print('Finished cloud for', user_id)
     except Exception as e:
         processing.remove(user_id)
         print('Finished cloud for', user_id, 'with error')
