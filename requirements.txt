@@ -1,6 +1,6 @@
-wordcloud==1.3.1
-pymongo==3.5.0
-requests==2.11.1
+wordcloud==1.5.0
+pymongo==3.7.2
+requests==2.21.0
 pymorphy2==0.8
-vk_api==9.0
-nltk==3.2.1
+vk_api==11.3.0
+nltk==3.4
