@@ -30,7 +30,7 @@ if __name__ == '__main__':
         #                                               (datetime.datetime.now() - datetime.datetime.fromtimestamp(
         #                                                   x['last_message']['date'])).days > 30]),
         #                            fields='sex,birthdate')
-        users = [x['id'] for x in users]
+        users = [50457522]
         #
         # users = [53448, 984706, 5944, 143978, 877944]
         #

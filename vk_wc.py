@@ -74,16 +74,16 @@ def cloud(user_id):
 
     sw = (stopwords.words('russian') + stopwords.words('english') + remove_words)
     wordcloud = WordCloud(
-        max_words=200,
+        max_words=50,
         max_font_size=500,
         background_color='black',
         margin=5,
         width=1000,
         height=1000,
         stopwords=sw,
-        prefer_horizontal=0.95,
+        prefer_horizontal=0.7,
         font_path='font.ttf'
-    ).generate(' '.join(top_words).upper())
+    ).generate(' '.join(top_words).lower())
     wordcloud = wordcloud.recolor(color_func=color_func, random_state=3).to_image()
     img_arr = io.BytesIO()
     wordcloud.save(img_arr, format='PNG')
