@@ -226,7 +226,7 @@ def worker(q, old=False):
         try:
             response = item[0](*item[1], **item[2])
             if response == -69 and old:
-                    _thread.interrupt_main()
+                    os._exit(-69)
         except Exception:
             pass
         # Сообщаем о выполненном задании
