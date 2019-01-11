@@ -1,5 +1,6 @@
 # from collections import Counter
 # from datetime import datetime
+import datetime
 from queue import Queue
 from threading import Thread
 
@@ -26,7 +27,9 @@ if __name__ == '__main__':
         #          'unread_count' in x['conversation']
         #          and x['last_message']['from_id'] == x['conversation']['peer']['id']
         #          and x['conversation']['can_write']['allowed']]
-        users = vk_group.users.get(user_ids=','.join([str(x['conversation']['peer']['id']) for x in conversations]),
+        users = vk_group.users.get(user_ids=','.join([str(x['conversation']['peer']['id']) for x in conversations if
+                                                      (datetime.datetime.now() - datetime.datetime.fromtimestamp(
+                                                          x['last_message']['date'])).days > 30]),
                                    fields='sex,birthdate')
         users = [x['id'] for x in users]
         #

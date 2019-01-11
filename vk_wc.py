@@ -160,7 +160,7 @@ def send_cloud(user_id, message, send=True):
                                    random_id=random.randint(0, 99999999), message='А вот и твое облако тегов! 🌍',
                                    attachment='photo{}_{}'.format(photo['owner_id'], photo['id']))
             vk_group.messages.send(user_id=user_id,
-                                   random_id=random.randint(0, 99999999), message='Не забудь рассказать друзьям 😉')
+                                   random_id=random.randint(0, 99999999), message='Не забудь поделиться с друзьями 😉')
 
         post_id = None
         if len(top_words) > 100:
